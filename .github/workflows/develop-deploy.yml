@@ -1,108 +1,118 @@
 name: CI/CD Pipeline
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-    id-token: write
-    contents: read
+  id-token: write
+  contents: read
 
 env:
-    ECS_CLUSTER: task-managers
-    ECS_SERVICE: tasks
-    ECS_TASK_DEFINITION: tasks-family
-    ECR_REPOSITORY: tasks
-    CONTAINER_NAME: tasks
+  ECS_CLUSTER: task-managers
+  ECS_SERVICE: tasks
+  ECS_TASK_DEFINITION: tasks-family
+  ECR_REPOSITORY: tasks
+  CONTAINER_NAME: tasks
 
 jobs:
-    test:
-        name: PHP Setup & Test
-        runs-on: ubuntu-latest
-        environment: develop
+  test:
+    name: PHP Setup & Test
+    runs-on: ubuntu-latest
+    environment: develop
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Set up PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.2'
-                  extensions: mbstring, pdo, pdo_mysql
-                  ini-values: post_max_size=256M, upload_max_filesize=256M
-                  coverage: none
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+          coverage: none
 
-            - name: Install dependencies
-              run: |
-                  composer install --prefer-dist --no-interaction
-                  npm install
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-interaction
+          npm install
 
-            - name: Run PHP Linting with PHP CodeSniffer
-              run: |
-                  composer require --dev squizlabs/php_codesniffer
-                  vendor/bin/phpcs --standard=PSR12 app/ config/ database/ routes/
+      - name: Run PHP Linting with PHP CodeSniffer
+        run: |
+          composer require --dev squizlabs/php_codesniffer
+          vendor/bin/phpcs --standard=PSR12 app/ config/ database/ routes/
 
-            - name: Run TypeScript Linting with ESLint
-              run: |
-                  npx eslint 'resources/js/**/*.{js,ts,tsx}'
+      - name: Run TypeScript Linting with ESLint
+        run: |
+          npx eslint 'resources/js/**/*.{js,ts,tsx}'
 
-            - name: Run Prettier for Formatting
-              run: |
-                  npx prettier --check 'resources/js/**/*.{js,ts,tsx}'
-                  npx prettier --check 'resources/css/**/*.{css,scss}'
+      - name: Run Prettier for Formatting
+        run: |
+          npx prettier --check 'resources/js/**/*.{js,ts,tsx}'
+          npx prettier --check 'resources/css/**/*.{css,scss}'
 
-            - name: Run Tests
-              run: |
-                  php artisan config:cache
+      - name: Run Tests
+        run: |
+          php artisan config:cache
 
-    deploy:
-        name: Deployment to ECS
-        environment: develop
-        needs: test
-        runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/main'
+  deploy:
+    name: Deployment to ECS
+    environment: develop
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-                  aws-region: ${{ vars.AWS_REGION }}
-                  role-to-assume: ${{ vars.AWS_GITHUB_ROLE }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
 
-            - name: Update ECS service with latest ECR images
-              env:
-                  AWS_REGION: ${{ vars.AWS_REGION }}
-              run: |
-                  # Generate image tags based on Git commit hash for unique identification
-                  NGINX_IMAGE_TAG="${{ github.sha }}"
-                  LARAVEL_IMAGE_TAG="${{ github.sha }}"
-                  VITE_IMAGE_TAG="${{ github.sha }}"
+      - name: Update ECS service with latest ECR images
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Generate image tags based on Git commit hash for unique identification
+          NGINX_IMAGE_TAG="${{ github.sha }}"
+          LARAVEL_IMAGE_TAG="${{ github.sha }}"
+          VITE_IMAGE_TAG="${{ github.sha }}"
 
-                  # Replace placeholders with actual image URIs in ecs-task-def.json
-                  ecs_task_def=$(cat deployment/ecs-task-def.json | \
-                    sed "s|<NGINX_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/nginx:$NGINX_IMAGE_TAG|" | \
-                    sed "s|<LARAVEL_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/laravel:$LARAVEL_IMAGE_TAG|" | \
-                    sed "s|<VITE_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/vite:$VITE_IMAGE_TAG|" | \
-                    sed "s|<MYSQL_IMAGE>|mysql:8.4|")
+          # Replace placeholders with actual image URIs in ecs-task-def.json
+          ecs_task_def=$(cat deployment/ecs-task-def.json | \
+            sed "s|<NGINX_IMAGE>|767398029156.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/nginx:$NGINX_IMAGE_TAG|" | \
+            sed "s|<LARAVEL_IMAGE>|767398029156.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/laravel:$LARAVEL_IMAGE_TAG|" | \
+            sed "s|<VITE_IMAGE>|767398029156.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/vite:$VITE_IMAGE_TAG|" | \
+            sed "s|<MYSQL_IMAGE>|mysql:8.4|")
 
-                  echo "$ecs_task_def" > updated-task-def.json
+          echo "$ecs_task_def" > updated-task-def.json
 
-                  # Register the updated task definition with ECS
-                  aws ecs register-task-definition \
-                    --cli-input-json file://updated-task-def.json \
-                    --region $AWS_REGION
+          # Register the updated task definition and capture its ARN
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://updated-task-def.json \
+            --region $AWS_REGION \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "Registered task definition ARN: $TASK_DEFINITION_ARN"
 
-                  # Update the ECS service to use the new task definition with wait-for-service-stability
-                  aws ecs wait services-stable \
-                    --cluster ${{ env.ECS_CLUSTER }} \
-                    --service ${{ env.ECS_SERVICE }} \
-                    --region $AWS_REGION \
+          # Update the ECS service to use the new task definition
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition $TASK_DEFINITION_ARN \
+            --force-new-deployment \
+            --region $AWS_REGION
+
+          # Wait for the ECS service to reach a stable state
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region $AWS_REGION
