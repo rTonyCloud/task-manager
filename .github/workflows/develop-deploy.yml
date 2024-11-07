@@ -21,8 +21,8 @@ env:
   CONTAINER_NAME: tasks
 
 jobs:
-  setup:
-    name: PHP Setup
+  test:
+    name: PHP Setup & Test
     runs-on: ubuntu-latest
     environment: develop
 
@@ -42,16 +42,6 @@ jobs:
         run: |
           composer install --prefer-dist --no-interaction
           npm install
-
-  Linting:
-    name: Linting and formatting
-    needs: setup
-    runs-on: ubuntu-latest
-    environment: develop
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Run PHP Linting with PHP CodeSniffer
         run: |
@@ -74,7 +64,7 @@ jobs:
   deploy:
     name: Deployment to ECS
     environment: develop
-    needs: Linting
+    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
