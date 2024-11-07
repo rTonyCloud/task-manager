@@ -102,9 +102,7 @@ jobs:
                     --region $AWS_REGION
 
                   # Update the ECS service to use the new task definition with wait-for-service-stability
-                  aws ecs update-service \
+                  aws ecs wait services-stable \
                     --cluster ${{ env.ECS_CLUSTER }} \
                     --service ${{ env.ECS_SERVICE }} \
-                    --force-new-deployment \
                     --region $AWS_REGION \
-                    --wait-for-service-stability true
