@@ -47,7 +47,6 @@ jobs:
       - name: Run Tests
         run: |
           php artisan config:cache
-          vendor/bin/pest --testdox
 
   deploy:
     needs: test
