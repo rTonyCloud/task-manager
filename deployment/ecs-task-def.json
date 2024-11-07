@@ -1,13 +1,13 @@
 {
     "family": "tasks-family",
     "networkMode": "awsvpc",
-    "requiresCompatibilities": ["FARGATE"],
+    "requiresCompatibilities": ["EC2"],
     "cpu": "1024",
     "memory": "2048",
     "containerDefinitions": [
         {
             "name": "nginx",
-            "image": "<NGINX_IMAGE>",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/nginx:latest",
             "essential": true,
             "memory": 512,
             "cpu": 256,
@@ -20,7 +20,7 @@
         },
         {
             "name": "laravel",
-            "image": "<LARAVEL_IMAGE>",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/laravel:latest",
             "essential": true,
             "memory": 512,
             "cpu": 256,
@@ -40,7 +40,7 @@
         },
         {
             "name": "vite",
-            "image": "<VITE_IMAGE>",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/vite:latest",
             "essential": true,
             "memory": 512,
             "cpu": 256,
