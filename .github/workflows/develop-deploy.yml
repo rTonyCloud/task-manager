@@ -21,8 +21,8 @@ env:
   CONTAINER_NAME: tasks
 
 jobs:
-  test:
-    name: PHP Setup & Test
+  setup:
+    name: PHP Setup
     runs-on: ubuntu-latest
     environment: develop
 
@@ -42,6 +42,16 @@ jobs:
         run: |
           composer install --prefer-dist --no-interaction
           npm install
+
+  Linting:
+    name: Linting and formatting
+    needs: setup
+    runs-on: ubuntu-latest
+    environment: develop
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Run PHP Linting with PHP CodeSniffer
         run: |
@@ -64,7 +74,7 @@ jobs:
   deploy:
     name: Deployment to ECS
     environment: develop
-    needs: test
+    needs: Linting
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -111,10 +121,9 @@ jobs:
             --force-new-deployment \
             --region $AWS_REGION
 
-            - name: Wait for the ECS service to reach a stable state
-            run: |
-              aws ecs wait services-stable \
-                --cluster ${{ env.ECS_CLUSTER }} \
-                --services ${{ env.ECS_SERVICE }} \
-                --region $AWS_REGION
-
+      - name: Wait for the ECS service to reach a stable state
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region $AWS_REGION
