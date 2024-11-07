@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  ECS_CLUSTER: task-manager-2
+  ECS_CLUSTER: task-manager
   ECS_SERVICE: tasks-service
   ECS_TASK_DEFINITION: tasks-family
   ECR_REPOSITORY: tasks
