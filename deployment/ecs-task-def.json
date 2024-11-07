@@ -2,8 +2,8 @@
     "family": "tasks-family",
     "networkMode": "awsvpc",
     "requiresCompatibilities": ["EC2"],
-    "cpu": "2048",
-    "memory": "4096",
+    "cpu": "4096",
+    "memory": "7024",
     "containerDefinitions": [
         {
             "name": "nginx",
