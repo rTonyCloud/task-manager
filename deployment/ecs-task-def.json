@@ -16,7 +16,22 @@
                     "containerPort": 80,
                     "protocol": "tcp"
                 }
-            ]
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tasks-family",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "nginx"
+                }
+            },
+            "healthCheck": {
+                "command": ["CMD-SHELL", "curl -f http://localhost || exit 1"],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 10
+            }
         },
         {
             "name": "laravel",
@@ -25,7 +40,7 @@
             "memory": 1024,
             "cpu": 1024,
             "environment": [
-                { "name": "APP_ENV", "value": "production" },
+                { "name": "APP_ENV", "value": "development" },
                 { "name": "DB_HOST", "value": "mysql" },
                 { "name": "DB_DATABASE", "value": "tasks" },
                 { "name": "DB_USERNAME", "value": "root" },
@@ -36,7 +51,22 @@
                     "containerPort": 9000,
                     "protocol": "tcp"
                 }
-            ]
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tasks-family",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "laravel"
+                }
+            },
+            "healthCheck": {
+                "command": ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 10
+            }
         },
         {
             "name": "vite",
@@ -49,7 +79,22 @@
                     "containerPort": 5173,
                     "protocol": "tcp"
                 }
-            ]
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tasks-family",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "vite"
+                }
+            },
+            "healthCheck": {
+                "command": ["CMD-SHELL", "curl -f http://localhost:5173 || exit 1"],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 10
+            }
         },
         {
             "name": "mysql",
@@ -66,7 +111,22 @@
                     "containerPort": 3306,
                     "protocol": "tcp"
                 }
-            ]
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/tasks-family",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "mysql"
+                }
+            },
+            "healthCheck": {
+                "command": ["CMD-SHELL", "mysqladmin ping -h localhost || exit 1"],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 3,
+                "startPeriod": 10
+            }
         }
     ]
 }

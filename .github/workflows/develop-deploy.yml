@@ -112,9 +112,10 @@ jobs:
             --region $AWS_REGION
 
           # Wait for the ECS service to reach a stable state
+          run: |
           aws ecs wait services-stable \
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
-            --region $AWS_REGION
+            --region $AWS_REGION \
             --max-attempts 90 \
             --delay 20
