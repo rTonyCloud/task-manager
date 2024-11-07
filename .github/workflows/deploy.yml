@@ -1,0 +1,90 @@
+# ref https://github.com/shivammathur/setup-php
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer install --prefer-dist --no-interaction
+          npm install
+
+      - name: Run PHP Linting with PHP CodeSniffer
+        run: |
+          composer require --dev squizlabs/php_codesniffer
+          vendor/bin/phpcs --standard=PSR12 app/ config/ database/ routes/
+
+      - name: Run TypeScript Linting with ESLint
+        run: |
+          npx eslint 'resources/js/**/*.{js,ts,tsx}'
+
+      - name: Run Prettier for Formatting
+        run: |
+          npx prettier --check 'resources/js/**/*.{js,ts,tsx}'
+          npx prettier --check 'resources/css/**/*.{css,scss}'
+
+      - name: Run Tests
+        run: |
+          php artisan config:cache
+          php artisan migrate --env=testing --force
+          vendor/bin/pest --testdox
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update ECS service with latest ECR images
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # Load and update the ECS task definition template with ECR image URIs
+          ecs_task_def=$(cat ecs-task-def.json | \
+            sed "s|<NGINX_IMAGE>|767398029156.dkr.ecr.us-east-1.amazonaws.com/nginx:latest|" | \
+            sed "s|<LARAVEL_IMAGE>|767398029156.dkr.ecr.us-east-1.amazonaws.com/laravel:latest|" | \
+            sed "s|<VITE_IMAGE>|767398029156.dkr.ecr.us-east-1.amazonaws.com/vite:latest|" | \
+            sed "s|<MYSQL_IMAGE>|mysql:8.4|")
+
+
+          echo "$ecs_task_def" > updated-task-def.json
+
+          # Register the updated task definition with ECS
+          aws ecs register-task-definition \
+            --cli-input-json file://updated-task-def.json
+
+          # Update the ECS service to use the new task definition
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --force-new-deployment
