@@ -47,7 +47,6 @@ jobs:
       - name: Run Tests
         run: |
           php artisan config:cache
-          php artisan migrate --env=testing --force
           vendor/bin/pest --testdox
 
   deploy:
