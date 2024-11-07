@@ -2,15 +2,15 @@
     "family": "tasks-family",
     "networkMode": "awsvpc",
     "requiresCompatibilities": ["EC2"],
-    "cpu": "1024",
-    "memory": "2048",
+    "cpu": "2048",
+    "memory": "4096",
     "containerDefinitions": [
         {
             "name": "nginx",
             "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/nginx:latest",
             "essential": true,
-            "memory": 512,
-            "cpu": 256,
+            "memory": 1024,
+            "cpu": 512,
             "portMappings": [
                 {
                     "containerPort": 80,
@@ -22,8 +22,8 @@
             "name": "laravel",
             "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/laravel:latest",
             "essential": true,
-            "memory": 512,
-            "cpu": 256,
+            "memory": 1024,
+            "cpu": 512,
             "environment": [
                 { "name": "APP_ENV", "value": "production" },
                 { "name": "DB_HOST", "value": "mysql" },
@@ -42,8 +42,8 @@
             "name": "vite",
             "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/vite:latest",
             "essential": true,
-            "memory": 512,
-            "cpu": 256,
+            "memory": 1024,
+            "cpu": 512,
             "portMappings": [
                 {
                     "containerPort": 5173,
@@ -55,8 +55,8 @@
             "name": "mysql",
             "image": "mysql:8.4",
             "essential": true,
-            "memory": 512,
-            "cpu": 256,
+            "memory": 1024,
+            "cpu": 512,
             "environment": [
                 { "name": "MYSQL_ROOT_PASSWORD", "value": "password123" },
                 { "name": "MYSQL_DATABASE", "value": "tasks" }

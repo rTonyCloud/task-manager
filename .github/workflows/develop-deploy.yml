@@ -116,3 +116,5 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --services ${{ env.ECS_SERVICE }} \
             --region $AWS_REGION
+            --max-attempts 90 \
+            --delay 20
