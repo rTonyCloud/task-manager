@@ -111,9 +111,10 @@ jobs:
             --force-new-deployment \
             --region $AWS_REGION
 
-          # Wait for the ECS service to reach a stable state
-          run: |
-          aws ecs wait services-stable \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
-            --region $AWS_REGION
+            - name: Wait for the ECS service to reach a stable state
+            run: |
+              aws ecs wait services-stable \
+                --cluster ${{ env.ECS_CLUSTER }} \
+                --services ${{ env.ECS_SERVICE }} \
+                --region $AWS_REGION
+
