@@ -18,14 +18,11 @@ RUN apt-get update && apt-get install -y \
 # Copy Composer from the Composer image
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-# Copy only the Composer files
+# Copy all application files, including artisan and composer files
 COPY . .
 
 # Install PHP dependencies for Laravel
 RUN composer install --no-interaction --optimize-autoloader --prefer-dist
-
-# Copy the application files into the container
-COPY . .
 
 # Set appropriate permissions for Laravel
 RUN chown -R www-data:www-data /var/www/html \

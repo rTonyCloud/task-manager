@@ -7,7 +7,7 @@
     "containerDefinitions": [
         {
             "name": "nginx",
-            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/nginx:latest",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/task-manager:nginx",
             "essential": true,
             "memory": 1024,
             "cpu": 1024,
@@ -27,7 +27,7 @@
         },
         {
             "name": "laravel",
-            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/laravel:latest",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/task-manager:laravel",
             "essential": true,
             "memory": 1024,
             "cpu": 1024,
@@ -45,7 +45,10 @@
                 }
             ],
             "healthCheck": {
-                "command": ["CMD-SHELL", "curl -f http://localhost:9000 || exit 1"],
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:9000 || exit 1"
+                ],
                 "interval": 30,
                 "timeout": 5,
                 "retries": 3,
@@ -54,7 +57,7 @@
         },
         {
             "name": "vite",
-            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/vite:latest",
+            "image": "767398029156.dkr.ecr.us-east-1.amazonaws.com/task-manager:vite",
             "essential": true,
             "memory": 1024,
             "cpu": 1024,
@@ -65,7 +68,10 @@
                 }
             ],
             "healthCheck": {
-                "command": ["CMD-SHELL", "curl -f http://localhost:5173 || exit 1"],
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://localhost:5173 || exit 1"
+                ],
                 "interval": 30,
                 "timeout": 5,
                 "retries": 3,

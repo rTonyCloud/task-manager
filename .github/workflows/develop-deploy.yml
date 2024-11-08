@@ -89,9 +89,9 @@ jobs:
 
           # Replace placeholders with actual image URIs in ecs-task-def.json
           ecs_task_def=$(cat deployment/ecs-task-def.json | \
-            sed "s|<NGINX_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/nginx:$NGINX_IMAGE_TAG|" | \
-            sed "s|<LARAVEL_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/laravel:$LARAVEL_IMAGE_TAG|" | \
-            sed "s|<VITE_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/vite:$VITE_IMAGE_TAG|" | \
+            sed "s|<NGINX_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/task-manager:$NGINX_IMAGE_TAG|" | \
+            sed "s|<LARAVEL_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/task-manager:$LARAVEL_IMAGE_TAG|" | \
+            sed "s|<VITE_IMAGE>|767398029156.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/task-manager:$VITE_IMAGE_TAG|" | \
             sed "s|<MYSQL_IMAGE>|mysql:8.4|")
 
           echo "$ecs_task_def" > updated-task-def.json
